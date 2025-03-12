@@ -13,7 +13,7 @@ async def upload_all():
     # recursively find all .txt files in the directory
     for root, _, files in os.walk("files"):
         for file in files:
-            if file.endswith(".txt") or file.endswith(".txt.bonuskana"):
+            if file.endswith(".txt"):
                 file_paths.append(os.path.join(root, file))
 
     await asyncio.gather(*[create_file(file_path) for file_path in file_paths])

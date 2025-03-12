@@ -8,11 +8,7 @@ from app.llm.vector_store import get_vector_store
 
 
 async def main():
-    vector_store = await get_vector_store()
-
     user_id = "cli"
-
-    previous_response_id = None
 
     while True:
         user_query = input(f"User: ")
