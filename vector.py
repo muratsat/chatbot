@@ -1,10 +1,11 @@
 import asyncio
 import os
 
-from app.llm.vector_store import create_file
+from app.llm import client
+from app.llm.vector_store import create_file, get_vector_store
 
 
-async def main():
+async def upload_all():
     # loop through all files in "files" directory recursively
 
     file_paths = []
@@ -16,6 +17,10 @@ async def main():
                 file_paths.append(os.path.join(root, file))
 
     await asyncio.gather(*[create_file(file_path) for file_path in file_paths])
+
+
+async def main():
+    await upload_all()
 
 
 if __name__ == "__main__":
