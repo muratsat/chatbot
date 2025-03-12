@@ -42,7 +42,6 @@ async def generate_response(
         last_response = last_response.scalars().first()
 
         prev_resp_id = last_response.response_id if last_response else None
-        print(prev_resp_id)
 
         response = client.responses.create(
             model="gpt-4o-mini",
