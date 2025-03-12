@@ -1,12 +1,16 @@
 import asyncio
 import os
+import uuid
 
 from app.llm import client
+from app.llm.assistant import generate_response
 from app.llm.vector_store import get_vector_store
 
 
 async def main():
     vector_store = await get_vector_store()
+
+    user_id = "cli"
 
     previous_response_id = None
 
@@ -16,21 +20,10 @@ async def main():
         if user_query.lower() in ["q", "й", "quit"]:
             break
 
-        response = client.responses.create(
-            model="gpt-4o-mini",
-            input=user_query,
-            tools=[
-                {
-                    "type": "file_search",
-                    "vector_store_ids": [vector_store.id],
-                }
-            ],
-            previous_response_id=previous_response_id,
-        )
+        message_id = str(uuid.uuid4())
 
-        previous_response_id = response.id
-
-        print(response.output_text)
+        response = await generate_response(user_id, "cli", message_id, user_query)
+        print(response)
 
 
 if __name__ == "__main__":
