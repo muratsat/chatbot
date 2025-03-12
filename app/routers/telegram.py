@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.config import env
+from app.llm.assistant import generate_response
 from app.telegram.messages import send_message
 
 router = APIRouter(prefix="/telegram")
@@ -56,8 +57,12 @@ async def telegram_webhook(body: TelegramWebhookPayload, request: Request):
             detail="Invalid secret token",
         )
 
-    echo_message = (
-        f"Hi, {body.message.from_.first_name}\n\nYou said: {body.message.text}"
+    response_message = await generate_response(
+        user_id=str(body.message.from_.id),
+        type="tg",
+        message_id=f"{body.message.from_.id}-{body.message.message_id}",
+        text=body.message.text,
     )
-    await send_message(body.message.chat.id, echo_message)
+
+    await send_message(body.message.chat.id, response_message)
     return {"success": True}
