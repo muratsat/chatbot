@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from app.config import env
 from app.llm.assistant import generate_response
@@ -37,7 +37,7 @@ class TelegramWebhookPayload(BaseModel):
 
 
 @router.post("")
-async def telegram_webhook(body: TelegramWebhookPayload, request: Request):
+async def telegram_webhook(request: Request):
     """
     Handle incoming webhook requests from Telegram.
     Setup telegram webhook to point to this endpoint:
@@ -57,12 +57,18 @@ async def telegram_webhook(body: TelegramWebhookPayload, request: Request):
             detail="Invalid secret token",
         )
 
-    response_message = await generate_response(
-        user_id=str(body.message.from_.id),
-        type="tg",
-        message_id=f"{body.message.from_.id}-{body.message.message_id}",
-        text=body.message.text,
-    )
+    try:
+        req_body = await request.json()
+        body = TelegramWebhookPayload.model_validate(req_body)
+        response_message = await generate_response(
+            user_id=str(body.message.from_.id),
+            type="tg",
+            message_id=f"{body.message.from_.id}-{body.message.message_id}",
+            text=body.message.text,
+        )
+        await send_message(body.message.chat.id, response_message)
 
-    await send_message(body.message.chat.id, response_message)
+    except ValidationError as e:
+        pass
+
     return {"success": True}

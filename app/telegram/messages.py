@@ -13,6 +13,4 @@ async def send_message(chat_id: int, text: str):
 
     async with aiohttp.ClientSession() as session:
         async with session.post(url, headers=headers, json=data) as response:
-            print(response.status)
-            response_body = await response.json()
-            print(response_body)
+            pass
