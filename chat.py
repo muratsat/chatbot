@@ -23,7 +23,7 @@ async def main():
         message_id = str(uuid.uuid4())
 
         response = await generate_response(user_id, "cli", message_id, user_query)
-        print(response)
+        print("Assistant:", response)
 
 
 if __name__ == "__main__":
