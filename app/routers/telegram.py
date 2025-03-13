@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field, ValidationError
 
 from app.config import env
+from app.llm import prompt
 from app.llm.assistant import generate_response
 from app.telegram.messages import send_message
 
@@ -60,15 +61,17 @@ async def telegram_webhook(request: Request):
     try:
         req_body = await request.json()
         body = TelegramWebhookPayload.model_validate(req_body)
+        text = prompt if body.message.text.strip() == "/start" else body.message.text
+        print(f"Received messages from {body.message.chat.username}: {text}")
         response_message = await generate_response(
             user_id=str(body.message.from_.id),
             type="tg",
             message_id=f"{body.message.from_.id}-{body.message.message_id}",
-            text=body.message.text,
+            text=text,
         )
         await send_message(body.message.chat.id, response_message)
 
-    except ValidationError as e:
+    except ValidationError:
         pass
 
     return {"success": True}

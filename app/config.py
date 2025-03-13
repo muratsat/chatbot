@@ -5,6 +5,7 @@ load_dotenv()
 
 
 class EnvironmentVariables(BaseSettings):
+    AI_NAME: str
     TG_BOT_API_TOKEN: str
     TG_WEBHOOK_TOKEN: str
 

@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi import FastAPI
 
 from app.db.engine import create_db_and_tables

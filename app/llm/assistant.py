@@ -2,6 +2,7 @@ from typing import Literal
 
 from sqlalchemy import and_, desc, select
 
+from app.db.actions import create_message, create_user
 from app.db.engine import async_session_maker
 from app.db.tables import Message, User
 from app.llm.vector_store import get_vector_store
@@ -24,15 +25,11 @@ async def generate_response(
 
         if user is None:
             user = User(id=user_id, type=type)
-            session.add(user)
-            await session.commit()
-            await session.refresh(user)
+            await create_user(session, user)
 
         msg_id = type + "-" + message_id
-        user_message = Message(id=msg_id, user_id=user_id, content=text)
-        session.add(user_message)
-        await session.commit()
-        await session.refresh(user_message)
+        user_message = Message(id=msg_id, user_id=user_id, content=text, role="user")
+        await create_message(session, user_message)
 
         last_response = await session.execute(
             select(Message)
@@ -61,9 +58,8 @@ async def generate_response(
             user_id=user_id,
             content=response.output_text,
             response_id=response.id,
+            role="assistant",
         )
-        session.add(ai_message)
-        await session.commit()
-        await session.refresh(ai_message)
+        await create_message(session, ai_message)
 
     return response.output_text
