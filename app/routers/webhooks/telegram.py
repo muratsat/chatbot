@@ -1,15 +1,16 @@
-from fastapi import HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import ValidationError
 
 from app.config import env
 from app.llm import prompt
 from app.llm.assistant import generate_response
-from app.routers.webhooks import router
 from app.telegram.messages import send_message
 from app.telegram.schemas import TelegramWebhookPayload
 
+telegram_router = APIRouter(prefix="/telegram")
 
-@router.post("")
+
+@telegram_router.post("")
 async def telegram_webhook(request: Request):
     """
     Handle incoming webhook requests from Telegram.
