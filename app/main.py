@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from app.db.engine import create_db_and_tables
 from app.llm.vector_store import setup_vector_store
-from app.routers import telegram
+from app.routers import webhooks
 
 
 async def on_startup():
@@ -12,4 +12,4 @@ async def on_startup():
 
 app = FastAPI()
 app.add_event_handler("startup", on_startup)
-app.include_router(telegram.router)
+app.include_router(webhooks.router)
