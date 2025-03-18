@@ -1,13 +1,13 @@
 from typing import Literal
 
-from sqlalchemy import and_, desc, select
+from sqlalchemy import asc, select
 
 from app.db.actions import create_message, create_user
 from app.db.engine import async_session_maker
 from app.db.tables import Message, User
 from app.llm.vector_store import get_vector_store
 
-from . import client
+from . import client, prompt
 
 
 async def generate_response(
@@ -31,25 +31,27 @@ async def generate_response(
         user_message = Message(id=msg_id, user_id=user_id, content=text, role="user")
         await create_message(session, user_message)
 
-        last_response = await session.execute(
+        messages = await session.execute(
             select(Message)
-            .where(and_(Message.user_id == user_id, Message.response_id.is_not(None)))
-            .order_by(desc(Message.date))
+            .where(
+                Message.user_id == user_id,
+            )
+            .order_by(asc(Message.date))
         )
-        last_response = last_response.scalars().first()
-
-        prev_resp_id = last_response.response_id if last_response else None
+        messages = messages.scalars().all()
 
         response = client.responses.create(
             model="gpt-4o-mini",
-            input=text,
+            input=[
+                {"role": "system", "content": prompt},
+            ]
+            + [{"role": msg.role, "content": msg.content} for msg in messages],
             tools=[
                 {
                     "type": "file_search",
                     "vector_store_ids": [vector_store.id],
                 }
             ],
-            previous_response_id=prev_resp_id,
         )
 
         ai_msg_id = type + "-" + response.id

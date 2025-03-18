@@ -1,10 +1,7 @@
 import asyncio
-import os
 import uuid
 
-from app.llm import client
 from app.llm.assistant import generate_response
-from app.llm.vector_store import get_vector_store
 
 
 async def main():
