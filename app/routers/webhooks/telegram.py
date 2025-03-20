@@ -34,7 +34,11 @@ async def telegram_webhook(request: Request):
     try:
         req_body = await request.json()
         body = TelegramWebhookPayload.model_validate(req_body)
-        text = prompt if body.message.text.strip() == "/start" else body.message.text
+        text = body.message.text
+        if text.strip() == "/start":
+            await send_message(body.message.chat.id, "Напишите любое сообщение")
+            return {"success": True}
+
         print(f"Received messages from {body.message.chat.username}: {text}")
         response_message = await generate_response(
             user_id=str(body.message.from_.id),

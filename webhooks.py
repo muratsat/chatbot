@@ -10,7 +10,7 @@ parser.add_argument(
     "--url",
     type=str,
     help="url to send updates to",
-    default="https://murat.a.pinggy.link/telegram",
+    default="https://murat.a.pinggy.link/webhooks/telegram",
 )
 args = parser.parse_args()
 
@@ -26,6 +26,10 @@ async def setup_webhook():
         async with session.get(url) as response:
             r = await response.text()
             print(r)
+            if response.status == 200:
+                print("Webhook set up successfully to ", url_to_send_updates_to)
+            else:
+                print("Failed to set up webhook")
 
 
 if __name__ == "__main__":
